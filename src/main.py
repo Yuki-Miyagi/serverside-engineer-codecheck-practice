@@ -1,5 +1,6 @@
 import sys
 import pandas as pd
+import math
 
 def main():
     args = sys.argv
@@ -13,6 +14,7 @@ def main():
     for i, v in enumerate(player_id):
         player_score = [df[df['player_id'] == v].mean()]
         
+        #player_scoreにdtypeが入り、20行目でエラーが出るため[0][0]にしている
         player_dict[player_id[i]] = player_score[0][0]
 
     #辞書型をvalueをもとに降順ソート
@@ -29,9 +31,19 @@ def main():
     sorted_dict = dict(player_id=sorted_id, mean_score=sorted_score)
     sorted_df = pd.DataFrame(data=sorted_dict)
 
+    def round_down(x):
+        return math.floor(x)
+
     #rank列を作成
     sorted_df['rank'] = sorted_df['mean_score'].rank(ascending=0)
-    print(sorted_df)
+    
+    #同率が反映されるようにする、round_down関数呼び出し
+    sorted_df['rank'] = sorted_df['rank'].apply(round_down)
+
+    #並び替え、出力
+    sorted_df = sorted_df[['rank', 'player_id', 'mean_score']]
+    print(sorted_df.to_string(index=False))
+
 
 if __name__ =="__main__":
     main()
